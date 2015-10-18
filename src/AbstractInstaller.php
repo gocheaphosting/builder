@@ -72,4 +72,9 @@ abstract class AbstractInstaller {
         else
             $logger->log(LogLevel::NOTICE, 'Could not delete file "'.$file.'"');
     }
+    
+    protected static function path($segment)
+    {
+        return join(DIRECTORY_SEPARATOR, func_get_args());
+    }
 }

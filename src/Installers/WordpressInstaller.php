@@ -11,11 +11,11 @@ use \Exception;
 class WordpressInstaller extends AbstractInstaller {
     static public function createConfiguration(array $data, $directory, ConsoleLogger $logger) {
         if (isset($data['database'])) {
-            if (!file_exists($directory.DIRECTORY_SEPARATOR.'wp-config-sample.php'))
+            if (!file_exists(self::path($directory, 'wp-config-sample.php')))
                 throw new Exception('Inconsistency in wordpress directory "'.$directory.'". File wp-config-sample.php does not exist!');
-            if (!copy($directory.DIRECTORY_SEPARATOR.'wp-config-sample.php', $directory.DIRECTORY_SEPARATOR.'wp-config.php'))
+            if (!copy(self::path($directory, 'wp-config-sample.php'), self::path($directory, 'wp-config.php')))
                 throw new Exception('Could not copy sample configuration to original configuration in directory "'.$directory.'"!');
-            $fp = file_get_contents($directory.DIRECTORY_SEPARATOR.'wp-config.php');
+            $fp = file_get_contents(self::path($directory, 'wp-config.php'));
             $fp = preg_replace(array(
                     '~define\((\'|")DB_NAME(\'|"),\s+(\'|").+(\'|")\)\;~',
                     '~define\((\'|")DB_USER(\'|"),\s+(\'|").+(\'|")\)\;~',
@@ -28,7 +28,7 @@ class WordpressInstaller extends AbstractInstaller {
                     'define("DB_PASSWORD", "'.$data['database']['password'].'");',
                     'define("DB_HOST", "'.$data['database']['host'].'");'
                 ), $fp);
-            file_put_contents($directory.DIRECTORY_SEPARATOR.'wp-config.php', $fp);
+            file_put_contents(self::path($directory, 'wp-config.php'), $fp);
             $logger->log(LogLevel::INFO, 'Configuration saved');
         } else {
             $logger->log(LogLevel::NOTICE, 'Skipping step due to missing database configuration');
@@ -46,12 +46,12 @@ class WordpressInstaller extends AbstractInstaller {
         }
 
         define('WP_INSTALLING', true);
-        require_once $directory.DIRECTORY_SEPARATOR.'wp-config.php';
-        // require_once $directory.DIRECTORY_SEPARATOR.'includes'.DIRECTORY_SEPARATOR.'wp-db.php';
-        require_once $directory.DIRECTORY_SEPARATOR.'wp-admin'.DIRECTORY_SEPARATOR.'upgrade-functions.php';
+        require_once self::path($directory, 'wp-config.php');
+        // require_once self::path($directory, 'includes', 'wp-db.php';
+        require_once self::path($directory, 'wp-admin', 'upgrade-functions.php');
 
         if (!function_exists('wp_install')) {
-            $logger->log(LogLevel::WARNING, 'Could not find function "wp_install" in file "'.$directory.DIRECTORY_SEPARATOR.'wp-admin'.DIRECTORY_SEPARATOR.'includes'.DIRECTORY_SEPARATOR.'upgrade.php"');
+            $logger->log(LogLevel::WARNING, 'Could not find function "wp_install" in file "'.self::path($directory, 'wp-admin', 'includes', 'upgrade.php"'));
         }
         if (isset($data['password'])) {
             $logger->log(LogLevel::INFO, 'Using password: '.$data['password']);
